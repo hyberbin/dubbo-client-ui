@@ -10,10 +10,15 @@
 ## 使用方法
 
 下载dist目录下面的文件
+
 /dubbo-client-ui-1.0-SNAPSHOT.jar
+
 /lib/*
 
+```shell script
 java -jar dubbo-client-ui-1.0-SNAPSHOT.jar 即可运行
+```
+
 
 ## 操作手册
 
