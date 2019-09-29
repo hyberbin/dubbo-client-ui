@@ -1,0 +1,2 @@
+cd ${path}
+mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=${mainDependency.groupId}:${mainDependency.artifactId}:${mainDependency.version}:jar$!sources -Ddest=${path}

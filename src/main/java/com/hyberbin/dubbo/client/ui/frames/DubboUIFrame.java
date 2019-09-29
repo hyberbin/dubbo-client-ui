@@ -1,0 +1,1076 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.hyberbin.dubbo.client.ui.frames;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.google.inject.Binding;
+import com.google.inject.Inject;
+import com.google.inject.TypeLiteral;
+import com.hyberbin.dubbo.client.analyse.JavaMethodAnalyser;
+import com.hyberbin.dubbo.client.analyse.MethodAnalysis;
+import com.hyberbin.dubbo.client.config.Async;
+import com.hyberbin.dubbo.client.config.CoderQueenModule;
+import com.hyberbin.dubbo.client.config.ConfigFactory;
+import com.hyberbin.dubbo.client.dao.SqliteDao;
+import com.hyberbin.dubbo.client.domain.AppDO;
+import com.hyberbin.dubbo.client.domain.DubboConfDO;
+import com.hyberbin.dubbo.client.domain.TestCaseDO;
+import com.hyberbin.dubbo.client.domain.TestCaseKVDO;
+import com.hyberbin.dubbo.client.enums.TestCaseType;
+import com.hyberbin.dubbo.client.exception.DubboClientUException;
+import com.hyberbin.dubbo.client.log.FrameAppender;
+import com.hyberbin.dubbo.client.model.ApiGroupModel;
+import com.hyberbin.dubbo.client.model.ApiModel;
+import com.hyberbin.dubbo.client.model.AppModel;
+import com.hyberbin.dubbo.client.model.DubboApiModel;
+import com.hyberbin.dubbo.client.model.TestCase;
+import com.hyberbin.dubbo.client.parser.ApiNormalStyleParser;
+import com.hyberbin.dubbo.client.runner.ApiRunner;
+import com.hyberbin.dubbo.client.ui.model.ApiGroupTreeBind;
+import com.hyberbin.dubbo.client.ui.model.ApiTreeBind;
+import com.hyberbin.dubbo.client.ui.model.AppTreeBind;
+import com.hyberbin.dubbo.client.ui.model.ParameterViewTableModel;
+import com.hyberbin.dubbo.client.ui.model.TestCaseTreeBind;
+import com.hyberbin.dubbo.client.utils.TestCaseUtils;
+import com.hyberbin.dubbo.client.utils.UIHelper;
+import com.hyberbin.dubbo.client.vo.AppModeVO;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
+import javax.swing.JTree;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
+import lombok.SneakyThrows;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.jdesktop.swingx.JXBusyLabel;
+import org.jplus.util.FileCopyUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * @author admin
+ */
+public class DubboUIFrame extends javax.swing.JFrame {
+
+    private static final Logger logger = LoggerFactory.getLogger(DubboUIFrame.class);
+    private DefaultMutableTreeNode ROOT = null;
+    private SqliteDao sqliteDao;
+
+    private Stack<String> busyStack=new Stack();
+    private final Object busyLabelLock=new Object();
+    /**
+     * Creates new form CoderQueenUIFrame
+     */
+    @Inject
+    public DubboUIFrame(SqliteDao sqliteDao) {
+        this.sqliteDao = sqliteDao;
+        initComponents();
+        statusBarBusyLabel.setVisible(false);
+        setIconImage(new ImageIcon(getClass().getResource("/icons/logo.png")).getImage());
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        int x = (int) (toolkit.getScreenSize().getWidth() - getWidth()) / 2;
+        int y = (int) (toolkit.getScreenSize().getHeight() - getHeight()) / 2;
+        setLocation(x, y);
+        appTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        FrameAppender.setLog((RSyntaxTextArea) logTextAreal);
+        getRSyntaxTextArea(resultTextAreal).setCodeFoldingEnabled(true);
+        getRSyntaxTextArea(resultTextAreal).setSyntaxEditingStyle(
+                SyntaxConstants.SYNTAX_STYLE_JSON_WITH_COMMENTS);
+        getRSyntaxTextArea(logTextAreal).setSyntaxEditingStyle(
+                SyntaxConstants.SYNTAX_STYLE_NONE);
+        getRSyntaxTextArea(javaTextArea).setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
+        loadAllApp();
+        paramsTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+    }
+
+    private RSyntaxTextArea getRSyntaxTextArea(JTextArea textArea) {
+        return (RSyntaxTextArea) textArea;
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form. WARNING: Do NOT
+     * modify this code. The content of this method is always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        appTreeMenu = new javax.swing.JPopupMenu();
+        jMenuItem4 = new javax.swing.JMenuItem();
+        jMenuItem5 = new javax.swing.JMenuItem();
+        jMenuItem6 = new javax.swing.JMenuItem();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        jPanel2 = new javax.swing.JPanel();
+        jSplitPane2 = new javax.swing.JSplitPane();
+        jpane1 = new javax.swing.JTabbedPane();
+        jPanel4 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        resultTextAreal = new org.fife.ui.rsyntaxtextarea.RSyntaxTextArea();
+        jPanel5 = new javax.swing.JPanel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        logTextAreal = new org.fife.ui.rsyntaxtextarea.RSyntaxTextArea(){
+            public void append(String str) {
+                super.append(str);
+                setCaretPosition(getText().length());
+            }
+        };
+        jTabbedPane2 = new javax.swing.JTabbedPane();
+        jPanel6 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        paramsTable = new javax.swing.JTable();
+        jButton6 = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        javaTextArea = new org.fife.ui.rsyntaxtextarea.RSyntaxTextArea();
+        dubboConfCombox = new javax.swing.JComboBox<>();
+        runButton = new javax.swing.JButton();
+        statusBarBusyLabel = new JXBusyLabel();
+        statusBarTips = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        appTree = new javax.swing.JTree();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuItem8 = new javax.swing.JMenuItem();
+
+        jMenuItem4.setText("导出到文件");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        appTreeMenu.add(jMenuItem4);
+
+        jMenuItem5.setText("重新加载");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem5ActionPerformed(evt);
+            }
+        });
+        appTreeMenu.add(jMenuItem5);
+
+        jMenuItem6.setText("删除此应用");
+        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem6ActionPerformed(evt);
+            }
+        });
+        appTreeMenu.add(jMenuItem6);
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jSplitPane1.setDividerLocation(250);
+        jSplitPane1.setDividerSize(3);
+
+        jSplitPane2.setDividerLocation(200);
+        jSplitPane2.setDividerSize(3);
+        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+
+        resultTextAreal.setColumns(20);
+        resultTextAreal.setRows(5);
+        jScrollPane3.setViewportView(resultTextAreal);
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addComponent(jScrollPane3)
+                .addGap(8, 8, 8))
+        );
+
+        jpane1.addTab("result", jPanel4);
+
+        logTextAreal.setColumns(20);
+        logTextAreal.setRows(5);
+        jScrollPane4.setViewportView(logTextAreal);
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addComponent(jScrollPane4)
+                .addGap(8, 8, 8))
+        );
+
+        jpane1.addTab("log", jPanel5);
+
+        jSplitPane2.setRightComponent(jpane1);
+
+        paramsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "name", "type", "value"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        jScrollPane2.setViewportView(paramsTable);
+        if (paramsTable.getColumnModel().getColumnCount() > 0) {
+            paramsTable.getColumnModel().getColumn(0).setPreferredWidth(3);
+            paramsTable.getColumnModel().getColumn(1).setPreferredWidth(5);
+        }
+
+        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/commit.png"))); // NOI18N
+        jButton6.setToolTipText("保存");
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addGap(0, 614, Short.MAX_VALUE)
+                .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel6Layout.createSequentialGroup()
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE)
+                    .addGap(32, 32, 32)))
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addComponent(jButton6)
+                .addGap(0, 142, Short.MAX_VALUE))
+            .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE))
+        );
+
+        jTabbedPane2.addTab("参数列表", jPanel6);
+
+        javaTextArea.setColumns(20);
+        javaTextArea.setRows(5);
+        jScrollPane5.setViewportView(javaTextArea);
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+        );
+
+        jTabbedPane2.addTab("java动态脚本", jPanel3);
+
+        jSplitPane2.setLeftComponent(jTabbedPane2);
+
+        loadDubboConf(null);
+        dubboConfCombox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dubboConfComboxActionPerformed(evt);
+            }
+        });
+
+        runButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/run@2x.png"))); // NOI18N
+        runButton.setToolTipText("运行用例");
+        runButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                runButtonActionPerformed(evt);
+            }
+        });
+
+        statusBarTips.setFont(new java.awt.Font("宋体", 0, 12)); // NOI18N
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jSplitPane2)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(statusBarBusyLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(statusBarTips, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(dubboConfCombox, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(runButton, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(statusBarTips, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(dubboConfCombox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(runButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(statusBarBusyLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(8, 8, 8)
+                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE))
+        );
+
+        jSplitPane1.setRightComponent(jPanel2);
+
+        jScrollPane1.setAutoscrolls(true);
+
+        javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("根目录");
+        appTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+        appTree.setPreferredSize(new java.awt.Dimension(680, 660));
+        appTree.setRequestFocusEnabled(false);
+        appTree.addTreeExpansionListener(new javax.swing.event.TreeExpansionListener() {
+            public void treeCollapsed(javax.swing.event.TreeExpansionEvent evt) {
+                appTreeTreeCollapsed(evt);
+            }
+            public void treeExpanded(javax.swing.event.TreeExpansionEvent evt) {
+                appTreeTreeExpanded(evt);
+            }
+        });
+        appTree.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                appTreeMousePressed(evt);
+            }
+        });
+        appTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                appTreeValueChanged(evt);
+            }
+        });
+        jScrollPane1.setViewportView(appTree);
+
+        jSplitPane1.setLeftComponent(jScrollPane1);
+
+        jMenu1.setText("文件");
+        jMenu1.setToolTipText("文件");
+
+        jMenuItem1.setText("JSON导入");
+        jMenuItem1.setToolTipText("JSON导入");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem1);
+
+        jMenuItem3.setText("pom导入");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem3);
+
+        jMenuItem8.setText("保存全部");
+        jMenuItem8.setToolTipText("保存全部");
+        jMenuItem8.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem8ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem8);
+
+        jMenuBar1.add(jMenu1);
+
+        setJMenuBar(jMenuBar1);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 902, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(jSplitPane1)
+                .addGap(0, 0, 0))
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    public void showBusyLabel(String label) {
+        synchronized(this.busyLabelLock) {
+            this.busyStack.push(label);
+            this.statusBarTips.setText(label);
+            statusBarBusyLabel.setVisible(true);
+            ((JXBusyLabel)statusBarBusyLabel).setBusy(true);
+            this.statusBarTips.setVisible(true);
+        }
+    }
+
+    public void finishBusyLabel(String label) {
+        synchronized(this.busyLabelLock) {
+            boolean hide = false;
+            if (this.busyStack.empty()) {
+                hide = true;
+            } else if (StringUtils.equals(label,this.busyStack.peek())) {
+                this.busyStack.pop();
+                if (this.busyStack.empty()) {
+                    hide = true;
+                } else {
+                    this.statusBarTips.setText(this.busyStack.peek());
+                }
+            } else {
+                this.busyStack.remove(label);
+            }
+
+            if (hide) {
+                this.hideBusyLabel();
+            }
+
+        }
+    }
+
+    private void hideBusyLabel() {
+        statusBarTips.setText("");
+        statusBarBusyLabel.setVisible(false);
+        ((JXBusyLabel)statusBarBusyLabel).setBusy(false);
+    }
+
+    private void runButtonActionPerformed(
+            java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
+        Component component = this;
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    DubboConfDO currentDubboConf = ConfigFactory.getCurrentDubboConf();
+                    if (currentDubboConf == null) {
+                        JOptionPane.showMessageDialog(DubboUIFrame.this, "请先配置Dubbo连接", "错误",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    runButton.setEnabled(false);
+                    jpane1.setSelectedIndex(1);
+                    getCurrentProxy().runTestCase();
+                } catch (DubboClientUException e) {
+                    JOptionPane
+                            .showMessageDialog(component, e.getMessage(), "错误 ",
+                                    JOptionPane.DEFAULT_OPTION);
+                } finally {
+                    runButton.setEnabled(true);
+                    jpane1.setSelectedIndex(0);
+                }
+            }
+        }.start();
+    }//GEN-LAST:event_runButtonActionPerformed
+
+
+    @Async("正在解析api信息")
+    public void selectApiTreeNode(ApiTreeBind apiTreeNodeObject) {
+        DubboApiModel apiModel = (DubboApiModel) apiTreeNodeObject.getApiModel();
+        JavaMethodAnalyser analyser = CoderQueenModule.getInstance(JavaMethodAnalyser.class);
+        MethodAnalysis methodAnalysis = analyser.analyse(apiModel.getClazz(), apiModel.getMethod());
+        if (methodAnalysis != null) {
+            UIHelper.renderParameterViewTable(paramsTable, UIHelper
+                    .parseMethodAnalysisToTableModel(methodAnalysis,
+                            new String[]{"fieldName", "value", "type"}));
+        }else {
+            DefaultTableModel model=(DefaultTableModel)paramsTable.getModel();
+            while (model.getRowCount()>0){
+                model.removeRow(0);
+            }
+        }
+        loadJavaInterceptorFromTemplate();
+    }
+
+    private void appTreeValueChanged(
+            javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_appTreeValueChanged
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) appTree
+                .getLastSelectedPathComponent();
+        if (node == null) {
+            return;
+        }
+        Object userObject = node.getUserObject();
+        if (userObject instanceof ApiTreeBind) {
+            ApiTreeBind apiTreeNodeObject = ((ApiTreeBind) userObject);
+            getCurrentProxy().selectApiTreeNode(apiTreeNodeObject);
+        } else if (userObject instanceof ApiGroupTreeBind) {
+            ApiGroupTreeBind apiGroupTreeNodeObject = (ApiGroupTreeBind) userObject;
+        } else if (userObject instanceof AppTreeBind) {
+            AppTreeBind appTreeBind = (AppTreeBind) userObject;
+            if (!appTreeBind.isInitialized()) {
+                getCurrentProxy().processApiTree(appTreeBind.getAppModeVO(), node);
+            }
+        } else if (userObject instanceof TestCaseTreeBind) {
+            getCurrentProxy().selectApiTreeNode(getCurrentUserObject(ApiTreeBind.class));
+            TestCaseTreeBind testCaseTreeNodeObject = (TestCaseTreeBind) userObject;
+            javaTextArea.setText(
+                    testCaseTreeNodeObject.getTestCase().getTestCaseDO().getGroovyScripts());
+            loadJavaInterceptorFromTemplate();
+            Map<String, String> caseValueMap = testCaseTreeNodeObject.getTestCase()
+                    .getCaseValueMap();
+            DefaultTableModel model = (DefaultTableModel) paramsTable.getModel();
+            Set<String> keySet = new HashSet<>(caseValueMap.keySet());
+            if (model.getRowCount() == 0) {
+                String[] strings = caseValueMap.keySet().toArray(new String[0]);
+                for (int i = 0; i < strings.length; i++) {
+                    keySet.remove(strings[i]);
+                    model.addRow(new String[]{strings[i], "", caseValueMap.get(strings[i])});
+                }
+            } else {
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    keySet.remove(model.getValueAt(i, 0));
+                    model.setValueAt(caseValueMap.getOrDefault(model.getValueAt(i, 0), ""), i, 2);
+                }
+            }
+            for (String key : keySet) {
+                model.addRow(new String[]{key, "", caseValueMap.get(key)});
+            }
+        }
+
+    }//GEN-LAST:event_appTreeValueChanged
+
+    private DubboUIFrame getCurrentProxy(){
+        return CoderQueenModule.getInstance(DubboUIFrame.class);
+    }
+
+    private void saveTestCase(TestCase testCase) {
+        DefaultTableModel model = (DefaultTableModel) paramsTable.getModel();
+        TestCaseDO testCaseDO = testCase.getTestCaseDO();
+        if (testCaseDO == null) {
+            testCaseDO = new TestCaseDO();
+            testCase.setTestCaseDO(testCaseDO);
+        }
+        testCase.getCaseValues().clear();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            TestCaseKVDO kvdo = new TestCaseKVDO();
+            kvdo.setCaseId(testCaseDO.getId());
+            String key = (String) model.getValueAt(i, 0);
+            String value = (String) model.getValueAt(i, 2);
+            if (key != null && value != null) {
+                kvdo.setKey(model.getValueAt(i, 0) + "");
+                kvdo.setValue(model.getValueAt(i, 2) + "");
+                testCase.getCaseValues().add(kvdo);
+            }
+        }
+        testCaseDO.setGroovyScripts(javaTextArea.getText());
+        ApiGroupTreeBind apiGroupTreeBind = getCurrentUserObject(ApiGroupTreeBind.class);
+        ApiTreeBind apiTreeBind = getCurrentUserObject(ApiTreeBind.class);
+        testCaseDO.setClassName(apiGroupTreeBind.getApiGroupModel().getClassName());
+        testCaseDO.setMethodName(apiTreeBind.getApiModel().getId());
+        testCaseDO.setCaseName(testCase.getTestCaseDO().getCaseName());
+        testCase.setTestCaseDO(testCaseDO);
+        sqliteDao.saveTestCase(testCase);
+    }
+
+    private void jButton6ActionPerformed(
+            java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        TestCaseTreeBind testCaseNode = getCurrentUserObject(TestCaseTreeBind.class);
+        if (testCaseNode != null) {//保存老用例
+            saveTestCase(testCaseNode.getTestCase());
+        } else if (getCurrentUserObject(ApiTreeBind.class) != null) {
+            //新建用例
+            ApiTreeBind currentApiTreeNodeObject = getCurrentUserObject(ApiTreeBind.class);
+            TestCase testCase = new TestCase();
+            TestCaseDO testCaseDO = new TestCaseDO();
+            String caseName = JOptionPane.showInputDialog("请输入用例名");
+            testCaseDO.setCaseName(caseName);
+            testCase.setTestCaseDO(testCaseDO);
+            saveTestCase(testCase);
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) appTree
+                    .getLastSelectedPathComponent();
+            node.add(new DefaultMutableTreeNode(
+                    new TestCaseTreeBind(testCase, currentApiTreeNodeObject)));
+            appTree.updateUI();
+        }
+
+    }//GEN-LAST:event_jButton6ActionPerformed
+
+    private void jMenuItem4ActionPerformed(
+            java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        // 导出到文件
+        exportAppToFile(getCurrentUserObject(AppTreeBind.class).getAppModeVO());
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
+
+    private void jMenuItem5ActionPerformed(
+            java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+        // 重新加载
+        getCurrentProxy().reload();
+    }//GEN-LAST:event_jMenuItem5ActionPerformed
+
+    private void jMenuItem6ActionPerformed(
+            java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+        // 删除此应用
+        deleteApp();
+    }//GEN-LAST:event_jMenuItem6ActionPerformed
+
+    private void appTreeMousePressed(
+            java.awt.event.MouseEvent e) {//GEN-FIRST:event_appTreeMousePressed
+        if (e.getButton() == 3) {
+            TreePath path = appTree.getPathForLocation(e.getX(), e.getY()); // 关键是这个方法的使用
+            if (path == null) {  //JTree上没有任何项被选中
+                return;
+            }
+            DefaultMutableTreeNode component = (DefaultMutableTreeNode) path.getLastPathComponent();
+            if (component.getUserObject() instanceof AppTreeBind) {
+                appTree.setSelectionPath(path);
+                appTreeMenu.show(appTree, e.getX(), e.getY());
+            }
+        }
+    }//GEN-LAST:event_appTreeMousePressed
+
+    private void jMenuItem1ActionPerformed(
+            java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        // 从文件导入
+        getCurrentProxy().importFromFile();
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void jMenuItem8ActionPerformed(
+            java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem8ActionPerformed
+        saveAllApp();
+    }//GEN-LAST:event_jMenuItem8ActionPerformed
+
+    private void jMenuItem3ActionPerformed(
+            java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        CoderQueenModule.getInstance(AddAppFrame.class).setVisible(true);
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+    private void appTreeTreeExpanded(
+            javax.swing.event.TreeExpansionEvent evt) {//GEN-FIRST:event_appTreeTreeExpanded
+        Dimension preferredSize = appTree.getPreferredSize();
+        preferredSize
+                .setSize(preferredSize.getWidth(), appTree.getRowHeight() * appTree.getRowCount());
+        appTree.setPreferredSize(preferredSize);
+        //jTree1.updateUI();
+    }//GEN-LAST:event_appTreeTreeExpanded
+
+    private void appTreeTreeCollapsed(
+            javax.swing.event.TreeExpansionEvent evt) {//GEN-FIRST:event_appTreeTreeCollapsed
+        Dimension preferredSize = appTree.getPreferredSize();
+        preferredSize
+                .setSize(preferredSize.getWidth(), appTree.getRowHeight() * appTree.getRowCount());
+        appTree.setPreferredSize(preferredSize);
+        //jTree1.updateUI();
+    }//GEN-LAST:event_appTreeTreeCollapsed
+
+    private void dubboConfComboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dubboConfComboxActionPerformed
+       if(dubboConfCombox.getSelectedIndex()==0){
+           CoderQueenModule.getInstance(DubboConfJFrame.class).setVisible(true);
+       }else {
+           ConfigFactory.setCurrentDubboConf((String)dubboConfCombox.getSelectedItem());
+       }
+    }//GEN-LAST:event_dubboConfComboxActionPerformed
+
+    //运行测试用例
+    @Async("正在运行用例")
+    public void runTestCase() {
+        ApiTreeBind currentUserObject = getCurrentUserObject(ApiTreeBind.class);
+        TestCase testCase = new TestCase();
+        TestCaseDO testCaseDO = new TestCaseDO();
+        testCase.setTestCaseDO(testCaseDO);
+        testCaseDO.setClassName(
+                        currentUserObject.getApiGroupTreeBind().getApiGroupModel().getClassName());
+        testCaseDO.setMethodName(currentUserObject.getApiModel().getId());
+        testCaseDO.setGroovyScripts(javaTextArea.getText());
+        TableModel model = paramsTable.getModel();
+        MethodAnalysis methodAnalysis = ((ParameterViewTableModel) model).getMethodAnalysis();
+        Object[] parameters = methodAnalysis.getParameters();
+        testCase.setParameters(parameters);
+        testCase.setCaseObjectMap(methodAnalysis.getParameterMap());
+        testCase.setMethod(methodAnalysis.getMethod());
+        Object runResult = TestCaseUtils.runTestCase(testCase, currentUserObject,
+                TestCaseType.DUBBO);
+        resultTextAreal
+                .setText(JSON.toJSONString(runResult, SerializerFeature.PrettyFormat));
+    }
+
+
+    private TreeNode getNode(TreeNode node, String name) {
+        if (node.toString().equals(name)) {
+            return node;
+        }
+        int childCount = node.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            TreeNode treeNode = node.getChildAt(i);
+            if (treeNode.toString().equals(name)) {
+                return treeNode;
+            }
+        }
+        throw new DubboClientUException("没有找到名称为" + name + "的节点");
+    }
+
+    public AppTreeBind getAppTreeBind(String name) {
+        TreeNode appNode = getNode(ROOT, name);
+        return (AppTreeBind) ((DefaultMutableTreeNode) appNode).getUserObject();
+    }
+
+    public ApiGroupTreeBind getApiGroupTreeBind(String appName, String groupName) {
+        TreeNode appNode = getNode(ROOT, appName);
+        TreeNode groupNode = getNode(appNode, groupName);
+        return (ApiGroupTreeBind) ((DefaultMutableTreeNode) groupNode).getUserObject();
+    }
+
+    public ApiTreeBind getApiTreeBind(String appName, String groupName, String apiName) {
+        TreeNode appNode = getNode(ROOT, appName);
+        TreeNode groupNode = getNode(appNode, groupName);
+        TreeNode apiNode = getNode(groupNode, apiName);
+        return (ApiTreeBind) ((DefaultMutableTreeNode) apiNode).getUserObject();
+    }
+
+    public TestCaseTreeBind getTestCaseTreeBind(String appName, String groupName, String apiName,
+            String caseName) {
+        TreeNode appNode = getNode(ROOT, appName);
+        TreeNode groupNode = getNode(appNode, groupName);
+        TreeNode apiNode = getNode(groupNode, apiName);
+        TreeNode caseNode = getNode(apiNode, caseName);
+        return (TestCaseTreeBind) ((DefaultMutableTreeNode) caseNode).getUserObject();
+    }
+
+    @Async("正在重新加载应用")
+    public void reload() {
+        AppTreeBind currentAppTreeNodeObject = getCurrentUserObject(AppTreeBind.class);
+        if (currentAppTreeNodeObject != null) {
+            AppModeVO appModeVO = currentAppTreeNodeObject.getAppModeVO();
+            AppModel appModel = appModeVO.getAppModel();
+            String newId = sqliteDao.updateAppId(appModeVO.getId());
+            String appName= appModel.getAppName();
+            ClassLoader appClassLoaderByCache = appModel.getClassLoader();
+            appModel.setSourceFile(null);
+            appModel.setClassLoader(null);
+            if(appClassLoaderByCache!=null){
+                List<Binding<ApiRunner>> bindingsByType = CoderQueenModule.INJECTOR
+                        .findBindingsByType(TypeLiteral.get(ApiRunner.class));
+                for (Binding<ApiRunner> apiRunnerBinding : bindingsByType) {
+                    try {
+                        apiRunnerBinding.getProvider().get().unload(appName);
+                    } catch (Throwable e) {
+                        logger.info("卸载文件出错", e);
+                    }
+                }
+            }
+            for (int i = 0; i < ROOT.getChildCount(); i++) {
+                DefaultMutableTreeNode childAt = (DefaultMutableTreeNode) ROOT.getChildAt(i);
+                Object userObject = childAt.getUserObject();
+                if (userObject instanceof AppTreeBind) {
+                    if (appName.equalsIgnoreCase(
+                            ((AppTreeBind) userObject).getModel().getAppName())) {
+                        ROOT.remove(i);
+                    }
+                }
+            }
+            appModeVO.setId(newId);
+            addAppNode(appModeVO);
+        }
+        appTree.updateUI();
+    }
+
+    private void exportAppToFile(AppModeVO appModeVO) {
+        String json = JSON.toJSONString(appModeVO);
+        JFileChooser fileChooser = new RememberFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fileChooser.showDialog(this, "选择");
+        File file = fileChooser.getSelectedFile();
+        try {
+            if (file.isDirectory()) {
+                file = new File(
+                        file.getAbsolutePath() + "/" + appModeVO.getAppModel().getAppName()
+                                + ".json");
+
+            }
+            if (file.exists()) {
+                int i = JOptionPane.showConfirmDialog(this, file.getName() + "已经存在，覆盖吗?");
+                if (JOptionPane.YES_OPTION == i) {
+                    FileCopyUtils.copy(json.getBytes(StandardCharsets.UTF_8), file);
+                    logger.info("覆盖文件:{}导出成功", file.getName());
+                    JOptionPane.showMessageDialog(this, "导出成功");
+                    return;
+                } else {
+                    logger.info("不覆盖文件，取消导出");
+                    return;
+                }
+            }
+            FileCopyUtils.copy(json.getBytes(StandardCharsets.UTF_8), file);
+            logger.info("导出{}成功", file.getName());
+            JOptionPane.showMessageDialog(this, "导出成功");
+        } catch (Throwable e) {
+            logger.error("导出文件出错", e);
+            JOptionPane.showMessageDialog(this, "导出文件出错", "错误 ", JOptionPane.DEFAULT_OPTION);
+        }
+    }
+    @Async("正在从文件导入")
+    public void importFromFile() {
+        JFileChooser fileChooser = new RememberFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.showDialog(this, "选择");
+        File file = fileChooser.getSelectedFile();
+        if (file.isFile() && file.exists() && file.getName().endsWith(".json")) {
+            try {
+                byte[] bytes = FileCopyUtils.copyToByteArray(file);
+                AppModeVO appModeVO = JSON
+                        .parseObject(new String(bytes, StandardCharsets.UTF_8), AppModeVO.class);
+                AppDO appDO = new AppDO(appModeVO);
+                appDO.setId(null);//重新生成id
+                sqliteDao.saveApp(appDO);
+                addAppNode(appModeVO);
+                appModeVO.setId(appDO.getId());
+            } catch (Throwable e) {
+                logger.error("从文件中导入失败", e);
+                JOptionPane
+                        .showMessageDialog(this, e.getMessage(), "错误 ", JOptionPane.DEFAULT_OPTION);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "文件不存在或者格式有误", "错误 ", JOptionPane.DEFAULT_OPTION);
+        }
+    }
+
+    @SneakyThrows
+    private void loadJavaInterceptorFromTemplate() {
+        if (StringUtils.isBlank(javaTextArea.getText())) {
+            try (InputStream resourceAsStream = getClass().getClassLoader()
+                    .getResourceAsStream("ApiInterceptorTemplate.java")) {
+                byte[] bytes = FileCopyUtils.copyToByteArray(resourceAsStream);
+                javaTextArea.setText(new String(bytes, StandardCharsets.UTF_8));
+            }
+        }
+    }
+
+    @SneakyThrows
+    private void deleteApp() {
+        AppTreeBind currentAppTreeNodeObject = getCurrentUserObject(AppTreeBind.class);
+        if (currentAppTreeNodeObject != null) {
+            AppModel appModel = currentAppTreeNodeObject.getModel();
+            String appName = appModel.getAppName();
+            int j = JOptionPane.showConfirmDialog(this, "确认删除" + appName + "吗？");
+            if (JOptionPane.YES_OPTION == j) {
+                int c = sqliteDao.deleteApp(currentAppTreeNodeObject.getAppModeVO().getId());
+                logger.info("删除了{}个应用", c);
+                ClassLoader appClassLoaderByCache = appModel.getClassLoader();
+                appModel.setSourceFile(null);
+                appModel.setClassLoader(null);
+                if (appClassLoaderByCache != null) {
+                    List<Binding<ApiRunner>> bindingsByType = CoderQueenModule.INJECTOR
+                            .findBindingsByType(TypeLiteral.get(ApiRunner.class));
+                    for (Binding<ApiRunner> apiRunnerBinding : bindingsByType) {
+                        try {
+                            apiRunnerBinding.getProvider().get()
+                                    .unload(appName);
+                        } catch (Throwable e) {
+                            logger.info("卸载文件出错", e);
+                        }
+                    }
+                }
+                for (int i = 0; i < ROOT.getChildCount(); i++) {
+                    DefaultMutableTreeNode childAt = (DefaultMutableTreeNode) ROOT.getChildAt(i);
+                    Object userObject = childAt.getUserObject();
+                    if (userObject instanceof AppTreeBind) {
+                        if (appName.equalsIgnoreCase(
+                                        ((AppTreeBind) userObject).getModel().getAppName())) {
+                            ROOT.remove(i);
+                        }
+                    }
+                }
+            }
+        }
+        appTree.updateUI();
+    }
+
+    private <T> T getCurrentUserObject(DefaultMutableTreeNode node, Class<? extends T> c) {
+        if (node == null || node == ROOT || node.isRoot()) {
+            return null;
+        } else if (c.isAssignableFrom(node.getUserObject().getClass())) {
+            return (T) node.getUserObject();
+        } else {
+            return getCurrentUserObject((DefaultMutableTreeNode) node.getParent(), c);
+        }
+    }
+
+    /**
+     * 获取树上指定类型的绑定数据
+     */
+    public <T> T getCurrentUserObject(Class<? extends T> c) {
+        return getCurrentUserObject((DefaultMutableTreeNode) appTree.getLastSelectedPathComponent(),
+                c);
+    }
+
+    public void loadDubboConf(String selected) {
+        ConfigFactory.loadDubboConf();
+        Collection<DubboConfDO> dubboConfs = ConfigFactory.getDubboConfs();
+        dubboConfCombox.removeAllItems();
+        dubboConfCombox.addItem(ConfigFactory.DEFAULT_ITEM_TEXT);
+        dubboConfs.forEach(d -> {
+            dubboConfCombox.addItem(d.getId());
+        });
+        if (selected != null) {
+            dubboConfCombox.setSelectedItem(selected);
+        } else if (dubboConfCombox.getItemCount() > 0) {
+            dubboConfCombox.setSelectedIndex(1);
+            ConfigFactory.setCurrentDubboConf((String) dubboConfCombox.getSelectedItem());
+        }
+    }
+
+    private void loadAllApp() {
+        List<AppDO> allApp = sqliteDao.getAllApp();
+        for (AppDO appDO : allApp) {
+            addAppNode(appDO.getAppModeVO());
+        }
+    }
+
+    private void saveAllApp() {
+        if (ROOT != null && ROOT.getChildCount() > 0) {
+            List<AppDO> appDOList = new ArrayList<>();
+            for (int i = 0; i < ROOT.getChildCount(); i++) {
+                DefaultMutableTreeNode childAt = (DefaultMutableTreeNode) ROOT.getChildAt(i);
+                Object userObject = childAt.getUserObject();
+                if (userObject instanceof AppTreeBind) {
+                    AppDO appDO = new AppDO(((AppTreeBind) userObject).getAppModeVO());
+                    appDOList.add(appDO);
+                }
+            }
+            if (!CollectionUtils.isEmpty(appDOList)) {
+                for (AppDO appDO : appDOList) {
+                    sqliteDao.saveApp(appDO);
+                }
+                JOptionPane.showMessageDialog(this, "保存" + appDOList.size() + "个应用成功");
+            }
+        }
+    }
+
+    public void addAppNode(AppModeVO appModel) {
+        if (ROOT == null) {
+            DefaultTreeModel model = (DefaultTreeModel) appTree.getModel();
+            DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+            ROOT = root;
+            if (!root.toString().equals("根目录")) {
+                root = new DefaultMutableTreeNode("根目录");
+                ROOT = root;
+                model.setRoot(root);
+            }
+        }
+        DefaultMutableTreeNode appNode = new DefaultMutableTreeNode(new AppTreeBind(appModel));
+        ROOT.add(appNode);
+        appTree.updateUI();
+    }
+
+    public void setLogFrameActive(){
+        jpane1.setSelectedIndex(1);
+    }
+
+    public JTree getAppTree(){
+        return appTree;
+    }
+
+    @Async("正在解析应用信息")
+    public void processApiTree(AppModeVO appModel, DefaultMutableTreeNode appNode) {
+        AppTreeBind appTreeBind = (AppTreeBind) appNode.getUserObject();
+        if (!appTreeBind.isInitialized()) {
+            synchronized (appTreeBind) {
+                if (appTreeBind.isInitialized()) {
+                    return;
+                }
+                logger.info("load appTreeBind:{}", appModel.getAppModel().getAppName());
+                ApiNormalStyleParser instance = CoderQueenModule
+                        .getInstance(ApiNormalStyleParser.class);
+                File workspace = new File(appModel.getWorkSpace());
+                AppModel appRuntimeMode = instance
+                        .parseAppModel(workspace.getAbsolutePath(),
+                                appModel.getAppConfig().getMainDependency(),
+                                appModel.getAppConfig().getExtDependencies());
+                appTreeBind.getAppModeVO().setAppModel(appRuntimeMode);
+                for (ApiGroupModel apiGroupModel : appRuntimeMode.getApiGroupList()) {
+                    DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode(
+                            new ApiGroupTreeBind(apiGroupModel, appTreeBind));
+                    for (ApiModel apiModel : apiGroupModel.getApiList()) {
+                        DefaultMutableTreeNode apiTreeNode = new DefaultMutableTreeNode(
+                                new ApiTreeBind(apiModel,
+                                        (ApiGroupTreeBind) groupNode.getUserObject()));
+                        groupNode.add(apiTreeNode);
+                        List<TestCase> testCases = sqliteDao
+                                .getTestCaseForMethod(apiGroupModel.getClassName(),
+                                        apiModel.getId());
+                        if (!CollectionUtils.isEmpty(testCases)) {
+                            for (TestCase testCase : testCases) {
+                                apiTreeNode
+                                        .add(new DefaultMutableTreeNode(
+                                                new TestCaseTreeBind(testCase,
+                                                        (ApiTreeBind) apiTreeNode
+                                                                .getUserObject())));
+                            }
+                        }
+                    }
+                    appNode.add(groupNode);
+                }
+                appTree.updateUI();
+                appTreeBind.setInitialized(true);
+            }
+        }
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTree appTree;
+    private javax.swing.JPopupMenu appTreeMenu;
+    private javax.swing.JComboBox<String> dubboConfCombox;
+    private javax.swing.JButton jButton6;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuItem jMenuItem6;
+    private javax.swing.JMenuItem jMenuItem8;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JSplitPane jSplitPane2;
+    private javax.swing.JTabbedPane jTabbedPane2;
+    private javax.swing.JTextArea javaTextArea;
+    private javax.swing.JTabbedPane jpane1;
+    private javax.swing.JTextArea logTextAreal;
+    private javax.swing.JTable paramsTable;
+    private javax.swing.JTextArea resultTextAreal;
+    private javax.swing.JButton runButton;
+    private javax.swing.JLabel statusBarBusyLabel;
+    private javax.swing.JLabel statusBarTips;
+    // End of variables declaration//GEN-END:variables
+}

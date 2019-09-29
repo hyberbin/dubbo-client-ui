@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.hyberbin</groupId>
+  <artifactId>dubbo-client-temp</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <url>http://172.16.9.46:4000</url>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.4</version>
+        <executions>
+          <execution>
+            <id>copy</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <excludeScope>provided</excludeScope>
+              <outputDirectory>
+                  ${path}
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+#foreach($dependency in $dependencies)
+  <dependency>
+    <groupId>${dependency.groupId}</groupId>
+    <artifactId>${dependency.artifactId}</artifactId>
+    <version>${dependency.version}</version>
+    <exclusions>
+      #foreach($exclusion in $dependency.exclusions)
+      <exclusion>
+        <artifactId>${exclusion.artifactId}</artifactId>
+        <groupId>${exclusion.groupId}</groupId>
+      </exclusion>
+      #end
+    </exclusions>
+  </dependency>
+#end
+  </dependencies>
+
+</project>

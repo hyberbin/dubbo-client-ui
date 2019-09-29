@@ -1,0 +1,2 @@
+cd ${path}
+mvn clean package
