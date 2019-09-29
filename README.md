@@ -19,20 +19,20 @@ java -jar dubbo-client-ui-1.0-SNAPSHOT.jar 即可运行
 
 主界面如下
 
-<img src="https://raw.githubusercontent.com/hyberbin/x-code-generator/master/dist/img/1.png" >
+<img src="https://raw.githubusercontent.com/hyberbin/dubbo-client-ui/master/dist/img/1.png" >
 
 1 第一次运行程序时没有应用服务目录，我们需要点击左上角【文件】-->【pom导入】
 
-<img src="https://raw.githubusercontent.com/hyberbin/x-code-generator/master/dist/img/2.png" >
+<img src="https://raw.githubusercontent.com/hyberbin/dubbo-client-ui/master/dist/img/2.png" >
 
 2 填写好api包对应的group、artifactId、version信息后，直接点击【√】确认，系统自动解析依赖并安装相关jar包到本地。
 
-<img src="https://raw.githubusercontent.com/hyberbin/x-code-generator/master/dist/img/3.png" >
+<img src="https://raw.githubusercontent.com/hyberbin/dubbo-client-ui/master/dist/img/3.png" >
 
 3 右上角下拉框中可以添加dubbo的运行环境参数，添加相关的url、端口、协议保存即可
 
-<img src="https://raw.githubusercontent.com/hyberbin/x-code-generator/master/dist/img/4.png" >
+<img src="https://raw.githubusercontent.com/hyberbin/dubbo-client-ui/master/dist/img/4.png" >
 
 4 展开左边api树，选择一个接口，系统会自动解析接口的参数名和类型，只需要在表格上填写好相关参数后就可以请求接口了。
 
-<img src="https://raw.githubusercontent.com/hyberbin/x-code-generator/master/dist/img/5.png" >
+<img src="https://raw.githubusercontent.com/hyberbin/dubbo-client-ui/master/dist/img/5.png" >
